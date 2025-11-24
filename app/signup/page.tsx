@@ -1,4 +1,5 @@
 "use client";
+import { signIn } from "next-auth/react";
 
 export default function SignUp() {
   async function signup(e: any) {
