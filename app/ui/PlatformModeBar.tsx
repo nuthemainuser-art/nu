@@ -59,6 +59,8 @@ function ModeChip({
         borderRadius: 999,
         cursor: "pointer",
         fontSize: 11,
+        transition: "background 0.15s ease, color 0.15s ease, transform 0.1s ease",
+        transform: active ? "scale(1.02)" : "scale(1)",
       }}
     >
       {label}

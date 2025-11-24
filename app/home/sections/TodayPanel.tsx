@@ -29,7 +29,10 @@ export default function TodayPanel({ mode }: { mode: PlatformMode }) {
   return (
     <div>
       <SubTabBar<TodayTab> tabs={tabs} active={tab} onChange={setTab} />
-      <div style={{ marginTop: 12, fontSize: 14, color: "#9fb0bf" }}>
+      <div
+        className="fade-slide-in"
+        style={{ marginTop: 12, fontSize: 14, color: "#9fb0bf" }}
+      >
         <div style={{ marginBottom: 6 }}>
           Mode: <strong>{mode}</strong>
         </div>

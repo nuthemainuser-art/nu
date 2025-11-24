@@ -30,3 +30,19 @@ html, body {
   padding: 0;
   background: #0d1117;
 }
+
+/* Smooth "water-like" transition for tab content */
+@keyframes fadeSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-slide-in {
+  animation: fadeSlideIn 0.18s ease-out;
+}
