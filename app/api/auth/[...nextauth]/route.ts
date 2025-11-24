@@ -4,7 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { users } from "../../../../lib/users";
 
-
 const handler = NextAuth({
   providers: [
     GoogleProvider({
@@ -18,7 +17,6 @@ const handler = NextAuth({
         email: {},
         password: {}
       },
-
       async authorize(credentials: any) {
         const user = users.find((u) => u.email === credentials.email);
         if (!user) return null;
@@ -34,14 +32,8 @@ const handler = NextAuth({
       }
     })
   ],
-
-  session: {
-    strategy: "jwt"
-  },
-
-  pages: {
-    signIn: "/login"
-  }
+  session: { strategy: "jwt" },
+  pages: { signIn: "/login" }
 });
 
 export { handler as GET, handler as POST };
