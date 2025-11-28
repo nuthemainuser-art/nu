@@ -1,5 +1,10 @@
 "use client";
 
+import { useTheme } from "../theme/ThemeContext";
+import { classicStyle } from "../theme/styles/classicStyle";
+import { glassStyle } from "../theme/styles/glassStyle";
+import { sphereStyle } from "../theme/styles/sphereStyle";
+
 export type AccountTab =
   | "today"
   | "tasks"
@@ -17,6 +22,15 @@ export default function PlatformAccountBar({
   active: AccountTab;
   onChange: (t: AccountTab) => void;
 }) {
+  const { theme } = useTheme();
+
+  const themeEngine =
+    theme === "glass"
+      ? glassStyle
+      : theme === "sphere"
+      ? sphereStyle
+      : classicStyle;
+
   const tabs: { key: AccountTab; label: string }[] = [
     { key: "today", label: "Today" },
     { key: "tasks", label: "Tasks" },
@@ -36,24 +50,26 @@ export default function PlatformAccountBar({
         borderBottom: "1px solid #2d333b",
       }}
     >
-      {tabs.map((t) => (
-        <div
-          key={t.key}
-          onClick={() => onChange(t.key)}
-          style={{
-            flex: 1,
-            textAlign: "center",
-            padding: "8px 0",
-            cursor: "pointer",
-            color: active === t.key ? "#9fe8d6" : "#9fb0bf",
-            background: active === t.key ? "#1f2937" : "transparent",
-            fontWeight: 600,
-            fontSize: 13,
-          }}
-        >
-          {t.label}
-        </div>
-      ))}
+      {tabs.map((t) => {
+        const activeStyle = active === t.key ? themeEngine.tabActive : themeEngine.tabInactive;
+
+        return (
+          <div
+            key={t.key}
+            onClick={() => onChange(t.key)}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              padding: "8px 0",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              ...activeStyle,
+            }}
+          >
+            {t.label}
+          </div>
+        );
+      })}
     </div>
   );
 }

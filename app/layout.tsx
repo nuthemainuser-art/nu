@@ -1,12 +1,19 @@
+import "./globals.css";
+import { ThemeProvider } from "./theme/ThemeContext";
+
 export const metadata = {
-  title: "Nu",
-  description: "NuV1 Minimal Auth App"
+  title: "Nu / Streamforge",
+  description: "Multi-layer Experience Platform",
 };
 
-export default function RootLayout({ children }: any) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ fontFamily: "sans-serif" }}>{children}</body>
+      <body>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

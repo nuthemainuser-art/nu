@@ -1,5 +1,10 @@
 "use client";
 
+import { useTheme } from "../theme/ThemeContext";
+import { classicStyle } from "../theme/styles/classicStyle";
+import { glassStyle } from "../theme/styles/glassStyle";
+import { sphereStyle } from "../theme/styles/sphereStyle";
+
 export type PlatformMode = "zen" | "general" | "speeddial";
 
 export default function PlatformModeBar({
@@ -9,6 +14,21 @@ export default function PlatformModeBar({
   active: PlatformMode;
   onChange: (m: PlatformMode) => void;
 }) {
+  const { theme } = useTheme();
+
+  const themeEngine =
+    theme === "glass"
+      ? glassStyle
+      : theme === "sphere"
+      ? sphereStyle
+      : classicStyle;
+
+  const modes: { key: PlatformMode; label: string }[] = [
+    { key: "zen", label: "Zen" },
+    { key: "general", label: "General" },
+    { key: "speeddial", label: "Speed Dial" },
+  ];
+
   return (
     <div
       style={{
@@ -20,50 +40,29 @@ export default function PlatformModeBar({
         justifyContent: "center",
       }}
     >
-      <ModeChip
-        label="Zen mode"
-        active={active === "zen"}
-        onClick={() => onChange("zen")}
-      />
-      <ModeChip
-        label="General mode"
-        active={active === "general"}
-        onClick={() => onChange("general")}
-      />
-      <ModeChip
-        label="Speed dial"
-        active={active === "speeddial"}
-        onClick={() => onChange("speeddial")}
-      />
-    </div>
-  );
-}
+      {modes.map((m) => {
+        const activeStyle =
+          active === m.key ? themeEngine.tabActive : themeEngine.tabInactive;
 
-function ModeChip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        border: "none",
-        background: active ? "#111827" : "#020617",
-        color: active ? "#9fe8d6" : "#9fb0bf",
-        padding: "4px 10px",
-        borderRadius: 999,
-        cursor: "pointer",
-        fontSize: 11,
-        transition: "background 0.15s ease, color 0.15s ease, transform 0.1s ease",
-        transform: active ? "scale(1.02)" : "scale(1)",
-      }}
-    >
-      {label}
-    </button>
+        return (
+          <button
+            key={m.key}
+            onClick={() => onChange(m.key)}
+            style={{
+              border: "none",
+              padding: "4px 10px",
+              borderRadius: 999,
+              cursor: "pointer",
+              fontSize: 11,
+              transition: "all 0.2s ease",
+              background: "transparent",
+              ...activeStyle,
+            }}
+          >
+            {m.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }

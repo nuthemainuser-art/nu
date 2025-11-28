@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import PlatformTopBar, { PlatformTab } from "../ui/PlatformTopBar";
-import PlatformModeBar, { PlatformMode } from "../ui/PlatformModeBar";
-import PlatformAccountBar, { AccountTab } from "../ui/PlatformAccountBar";
+import { useTheme } from "../theme/ThemeContext";
+
+import PlatformTopBar from "../ui/PlatformTopBar";
+import PlatformModeBar from "../ui/PlatformModeBar";
+import PlatformAccountBar from "../ui/PlatformAccountBar";
+import { PlatformTab } from "../ui/PlatformTopBar";
+import { PlatformMode } from "../ui/PlatformModeBar";
+import { AccountTab } from "../ui/PlatformAccountBar";
 
 import TodayPanel from "./sections/TodayPanel";
 import TasksPanel from "./sections/TasksPanel";
@@ -13,22 +18,41 @@ import AssistPanel from "./sections/AssistPanel";
 import ShopPanel from "./sections/ShopPanel";
 import LfPanel from "./sections/LfPanel";
 import AccountSettingsPanel from "./sections/AccountSettingsPanel";
+
 import ZenDock from "../ui/zen/ZenDock";
+import { classicStyle } from "../theme/styles/classicStyle";
+import { glassStyle } from "../theme/styles/glassStyle";
+import { sphereStyle } from "../theme/styles/sphereStyle";
 
 export default function Home() {
   const [platformTab, setPlatformTab] = useState<PlatformTab>("home");
-  const [mode, setMode] = useState<PlatformMode>("general");
-  const [accountTab, setAccountTab] = useState<AccountTab>("today");
+	const [mode, setMode] = useState<PlatformMode>("general");
+	const [accountTab, setAccountTab] = useState<AccountTab>("today");
+
+
+  const { theme, setTheme } = useTheme();
+const themeEngine =
+  theme === "glass"
+    ? glassStyle
+    : theme === "sphere"
+    ? sphereStyle
+    : classicStyle;
 
   const showAccountLayer = platformTab === "home";
 
-  // Background reacts softly to mode + account tab (subtle, like "water" mood)
+  const animateClass =
+    theme === "glass" ? "glass-animate" :
+    theme === "sphere" ? "sphere-animate" :
+    "fade-slide-in";
+
   const mainBackground =
     mode === "zen"
       ? "radial-gradient(circle at top, #0f172a, #020617)"
       : mode === "speeddial"
       ? "linear-gradient(135deg, #0f172a, #111827)"
       : "linear-gradient(135deg, #020617, #0b1120)";
+	const safePanel = { ...themeEngine.panel };
+	delete (safePanel as any).background;
 
   return (
     <div
@@ -43,50 +67,59 @@ export default function Home() {
         flexDirection: "column",
       }}
     >
-      {/* Top platform bar */}
-      <PlatformTopBar active={platformTab} onChange={setPlatformTab} />
+		<PlatformTopBar active={platformTab} onChange={setPlatformTab} />
 
-      {/* Mode bar (now only changes internal mode, no routing) */}
-      <PlatformModeBar active={mode} onChange={setMode} />
+		<PlatformModeBar active={mode} onChange={setMode} />
 
-      {/* Account layer (only in Home platform tab) */}
-      {showAccountLayer && (
-        <PlatformAccountBar active={accountTab} onChange={setAccountTab} />
-      )}
+		<PlatformAccountBar active={accountTab} onChange={setAccountTab} />
 
-      {/* Main content area */}
+
+      {/* THEME BUTTONS */}
       <div
         style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: 12,
-          background: mainBackground,
-          transition: "background 0.25s ease",
+          display: "flex",
+          gap: 8,
+          padding: "8px 12px",
+          background: "rgba(15,23,42,0.5)",
+          borderBottom: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        {/* PLATFORM-TAB VIEWS */}
+        <button onClick={() => setTheme("classic")}>Classic</button>
+        <button onClick={() => setTheme("glass")}>Glass</button>
+        <button onClick={() => setTheme("sphere")}>Sphere</button>
+      </div>
+
+      {/* MAIN AREA */}
+		<div
+		  className={`transition-theme ${animateClass}`}
+		  style={{
+			  
+			flex: 1,
+			overflowY: "auto",
+			padding: 12,
+
+			// IMPORTANT: Only 1 background
+			background: mainBackground,
+			...safePanel,
+			// Theme styling (blur, border, shadow etc.)
+			...themeEngine.panel,
+		  }}
+		>
+
         {platformTab === "about" && (
-          <div className="fade-slide-in" style={{ padding: 12, color: "#9fb0bf" }}>
-            <h2 style={{ marginTop: 0 }}>About Nu / Streamforge</h2>
-            <p style={{ fontSize: 14 }}>
-              Multi-layer platform: platform modes at the top, account spaces in the
-              middle, and modules like Today, Tasks, Comics, Social, Assist, Shop,
-              LF, and Settings. Currently read-only; data backends (Sheets, Postgres,
-              microservices) will plug in later.
-            </p>
+          <div className={animateClass}>
+            <h2>About Streamforge</h2>
           </div>
         )}
 
         {platformTab === "settings" && (
-          <div className="fade-slide-in" style={{ padding: 12, color: "#9fb0bf" }}>
-            <h2 style={{ marginTop: 0 }}>Platform Settings</h2>
-            <p style={{ fontSize: 14 }}>Platform-level settings coming soon.</p>
+          <div className={animateClass}>
+            <h2>Platform Settings</h2>
           </div>
         )}
 
         {platformTab === "home" && (
-          <div className="fade-slide-in">
-            {/* ACCOUNT-TAB VIEWS */}
+          <>
             {accountTab === "today" && <TodayPanel mode={mode} />}
             {accountTab === "tasks" && <TasksPanel mode={mode} />}
             {accountTab === "comics" && <ComicsPanel mode={mode} />}
@@ -96,7 +129,6 @@ export default function Home() {
             {accountTab === "lf" && <LfPanel mode={mode} />}
             {accountTab === "settings" && <AccountSettingsPanel mode={mode} />}
 
-            {/* ZEN DOCK – appears when Zen mode is selected, integrated into UI */}
             {mode === "zen" && (
               <div
                 style={{
@@ -111,7 +143,7 @@ export default function Home() {
                 <ZenDock />
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>
