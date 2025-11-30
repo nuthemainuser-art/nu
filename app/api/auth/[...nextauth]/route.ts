@@ -1,55 +1,69 @@
 import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
-
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyPassword, verifyTwoPart } from "@/lib/auth/userStore";
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          access_type: "offline",
+          prompt: "consent",
+          response_type: "code",
+          include_granted_scopes: "true",
+          scope: [
+            "openid",
+            "email",
+            "profile",
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/script.projects",
+            "https://www.googleapis.com/auth/script.deployments",
+            "https://www.googleapis.com/auth/script.scriptapp",
+          ].join(" "),
+        },
+      },
     }),
 
-    Credentials({
-      name: "Credentials",
-      credentials: {
-        mode: { label: "mode", type: "text", default: "password" },
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-        keyId: { label: "Key ID", type: "text" },
-        pin: { label: "PIN", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials) return null;
-
-        const mode = typeof credentials.mode === "string" ? credentials.mode : "password";
-
-        if (mode === "password") {
-          const email = typeof credentials.email === "string" ? credentials.email : "";
-          const password = typeof credentials.password === "string" ? credentials.password : "";
-          if (!email || !password) return null;
-          const user = verifyPassword(email, password);
-          if (!user) return null;
-          return { id: user.id, email: user.email, name: user.username };
-        }
-
-        if (mode === "twopart") {
-          const keyId = typeof credentials.keyId === "string" ? credentials.keyId : "";
-          const pin = typeof credentials.pin === "string" ? credentials.pin : "";
-          if (!keyId || !pin) return null;
-          const user = verifyTwoPart(keyId, pin);
-          if (!user) return null;
-          return { id: user.id, email: user.email, name: user.username };
-        }
-
-        return null;
+    CredentialsProvider({
+      name: "Streamforge Login",
+      credentials: {},
+      authorize(credentials) {
+        const mode = credentials?.mode ?? "password";
+        if (mode === "password")
+          return verifyPassword(credentials!.email, credentials!.password);
+        return verifyTwoPart(credentials!.keyId, credentials!.pin);
       },
     }),
   ],
 
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
-});
 
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (user) token.user = user;
+      if (account?.provider === "google") {
+        token.accessToken = account.access_token;
+        token.refreshToken = account.refresh_token;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      session.user = token.user;
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      return session;
+    },
+  },
+
+  secret: process.env.AUTH_SECRET,
+};
+
+// ⬅️ THIS IS THE FIX
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

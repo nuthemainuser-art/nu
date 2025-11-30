@@ -1,8 +1,14 @@
 // app/login/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState } from "react";// ❌ WRONG
+// import { signIn } from "next-auth/react";
+
+// ✅ RIGHTimport { signIn } from "@auth/nextjs/client";
+
 import { signIn } from "next-auth/react";
+
+
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
