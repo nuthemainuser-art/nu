@@ -1,29 +1,36 @@
-import { users } from "../../../lib/users";
+// app/api/signup/route.ts
 
-import bcrypt from "bcrypt";
+import { NextRequest, NextResponse } from "next/server";
+import { createUser } from "@/lib/auth/userStore";
 
-export async function POST(req: Request) {
-  const { name, username, phone, email, password } = await req.json();
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
 
-  if (!email || !password)
-    return new Response("Missing fields", { status: 400 });
+    const { email, username, name, password } = body;
 
-  const exists = users.find((u) => u.email === email);
-  if (exists)
-    return new Response("User already exists", { status: 400 });
+    if (!email || !username || !name || !password) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-  const hashed = await bcrypt.hash(password, 10);
+    const { user } = createUser({
+      email,
+      username,
+      name,
+      password,
+    });
 
-  const user = {
-    id: crypto.randomUUID(),
-    name,
-    username,
-    phone,
-    email,
-    password: hashed
-  };
-
-  users.push(user);
-
-  return new Response("OK", { status: 200 });
+    return NextResponse.json(
+      { success: true, user: { id: user.id, email: user.email } },
+      { status: 200 }
+    );
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e.message ?? "Signup failed" },
+      { status: 500 }
+    );
+  }
 }
