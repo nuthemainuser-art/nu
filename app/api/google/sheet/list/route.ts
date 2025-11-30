@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/authOptions";
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
